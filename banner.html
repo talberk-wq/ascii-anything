@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Banner Generator — ASCII Anything</title>
+    <meta name="description" content="Generate beautiful ASCII art text banners. Free online tool with multiple fonts.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .banner-controls {
+            max-width: 600px;
+            margin: 40px auto;
+        }
+        .banner-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            background: #000;
+            border: 1px solid #004400;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .banner-input:focus {
+            outline: none;
+            border-color: #00ff00;
+        }
+        .banner-output {
+            margin-top: 30px;
+            background: #000;
+            border: 1px solid #004400;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .banner-output pre {
+            margin: 0;
+            font-size: 0.7em;
+            line-height: 1.2;
+            white-space: pre;
+        }
+        .banner-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">⬡</span>
+                <span class="logo-text">ASCII Anything</span>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Converter</a>
+                <a href="/banner" class="nav-link active">Text Banner</a>
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="https://github.com/talberk-wq/ascii-anything" class="nav-link" target="_blank">GitHub</a>
+            </nav>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero">
+            <h1 class="hero-title">
+                Text Banner<br>
+                <span class="gradient-text">Generator</span>
+            </h1>
+            <p class="hero-subtitle">
+                Create beautiful ASCII art banners from any text. Perfect for code comments, README files, terminal art, and more.
+            </p>
+        </section>
+
+        <!-- Banner Controls -->
+        <section class="banner-controls">
+            <input type="text" id="bannerInput" class="banner-input" placeholder="Enter your text here..." maxlength="50">
+            
+            <div class="control-group">
+                <label class="control-label">Font Style</label>
+                <select id="bannerFont" class="control-select">
+                    <option value="slant">Slant (modern, clean)</option>
+                    <option value="doom">Doom (bold, blocky)</option>
+                    <option value="big">Big (large, readable)</option>
+                    <option value="banner3">Banner3 (wide display)</option>
+                    <option value="small">Small (compact)</option>
+                    <option value="cyberlarge">Cyberlarge (tech/futuristic)</option>
+                    <option value="3-d">3-D (three-dimensional)</option>
+                    <option value="gothic">Gothic (dramatic)</option>
+                    <option value="standard">Standard (classic)</option>
+                </select>
+            </div>
+
+            <button class="btn-primary" id="generateBtn" style="width:100%;margin-top:20px;">Generate Banner</button>
+
+            <div class="banner-output" id="bannerOutput" style="display:none;">
+                <pre id="bannerPreview"></pre>
+            </div>
+
+            <div class="banner-actions" id="bannerActions" style="display:none;">
+                <button class="btn-primary" id="copyBtn">Copy to Clipboard</button>
+                <button class="btn-primary" id="downloadTxtBtn">Download .txt</button>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="how-it-works" id="how-it-works">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Type Text</h3>
+                    <p>Enter any text up to 50 characters. Shorter text works best with detailed fonts.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Choose Font</h3>
+                    <p>Select from 9 different ASCII art fonts, each with its own style and personality.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Download</h3>
+                    <p>Copy to clipboard or download as a text file for use in code, docs, or terminals.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with ❤️ by <a href="https://github.com/trickysyntax" target="_blank">trickysyntax</a></p>
+            <p class="footer-note">Powered by pyfiglet with 571+ available fonts.</p>
+        </footer>
+    </div>
+
+    <script>
+        const bannerInput = document.getElementById('bannerInput');
+        const bannerFont = document.getElementById('bannerFont');
+        const generateBtn = document.getElementById('generateBtn');
+        const bannerOutput = document.getElementById('bannerOutput');
+        const bannerPreview = document.getElementById('bannerPreview');
+        const bannerActions = document.getElementById('bannerActions');
+        const copyBtn = document.getElementById('copyBtn');
+        const downloadTxtBtn = document.getElementById('downloadTxtBtn');
+
+        let currentBanner = '';
+
+        // Generate on Enter key
+        bannerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') generateBanner();
+        });
+
+        generateBtn.addEventListener('click', generateBanner);
+
+        async function generateBanner() {
+            const text = bannerInput.value.trim() || 'ASCII';
+            const font = bannerFont.value;
+
+            generateBtn.textContent = 'Generating...';
+            generateBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/banner', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({text, font})
+                });
+
+                const result = await response.json();
+
+                if (result.error) {
+                    alert('Error: ' + result.error);
+                    return;
+                }
+
+                currentBanner = result.art;
+                bannerPreview.textContent = currentBanner;
+                bannerOutput.style.display = 'block';
+                bannerActions.style.display = 'flex';
+
+            } catch (error) {
+                alert('Error generating banner: ' + error.message);
+            } finally {
+                generateBtn.textContent = 'Generate Banner';
+                generateBtn.disabled = false;
+            }
+        }
+
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(currentBanner).then(() => {
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => copyBtn.textContent = 'Copy to Clipboard', 2000);
+            });
+        });
+
+        downloadTxtBtn.addEventListener('click', () => {
+            const blob = new Blob([currentBanner], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ascii-banner.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        // Auto-generate on load with default text
+        window.addEventListener('load', () => {
+            bannerInput.value = 'ASCII';
+            generateBanner();
+        });
+    </script>
+</body>
+</html>

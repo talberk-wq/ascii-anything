@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASCII Anything — Turn Any Image Into ASCII Art</title>
-    <meta name="description" content="Free online ASCII art converter. Transform any image into beautiful text-based art instantly. No upload required — everything happens in your browser.">
+    <title>ASCII Anything — Turn Any File Into ASCII Art</title>
+    <meta name="description" content="Free online ASCII art converter. Images, PDFs, videos, documents — transform anything into beautiful text-based art.">
     <link rel="stylesheet" href="styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,36 +19,41 @@
                 <span class="logo-text">ASCII Anything</span>
             </div>
             <nav class="nav">
+                <a href="/" class="nav-link">Converter</a>
+                <a href="/banner" class="nav-link">Text Banner</a>
                 <a href="#how-it-works" class="nav-link">How It Works</a>
-                <a href="https://github.com/talberk-wq" class="nav-link" target="_blank">GitHub</a>
+                <a href="https://github.com/talberk-wq/ascii-anything" class="nav-link" target="_blank">GitHub</a>
             </nav>
         </header>
 
         <!-- Hero -->
         <section class="hero">
             <h1 class="hero-title">
-                Turn Any Image Into<br>
+                Turn Any File Into<br>
                 <span class="gradient-text">ASCII Art</span>
             </h1>
             <p class="hero-subtitle">
-                Free, instant, private. Drag an image below and watch it transform into beautiful text-based art. No upload required — everything happens in your browser.
+                Free, instant, private. Upload anything — images, PDFs, videos, documents — and watch it transform into beautiful text-based art.
             </p>
             
             <!-- Upload Zone -->
             <div class="upload-zone" id="uploadZone">
-                <input type="file" id="fileInput" accept="image/*" hidden>
+                <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt,.mp4,.mov,.avi,.gif,.svg" hidden>
                 <div class="upload-content">
                     <div class="upload-icon">📁</div>
-                    <h3>Drop your image here</h3>
+                    <h3>Drop your file here</h3>
                     <p>or click to browse</p>
-                    <p class="upload-hint">Supports: JPG, PNG, GIF, WebP, BMP</p>
+                    <p class="upload-hint">Supports: Images, PDF, Word, PowerPoint, TXT, Video (MP4/MOV/AVI/GIF), SVG</p>
                 </div>
                 <div class="upload-preview" id="uploadPreview"></div>
+                <div class="video-preview" id="videoPreview" style="display:none;">
+                    <video id="videoElement" controls style="max-width:100%;max-height:300px;"></video>
+                </div>
             </div>
         </section>
 
-        <!-- Controls -->
-        <section class="controls" id="controls" style="display: none;">
+        <!-- Image Controls -->
+        <section class="controls" id="imageControls" style="display: none;">
             <div class="control-group">
                 <label class="control-label">Character Palette</label>
                 <select id="paletteSelect" class="control-select">
@@ -85,6 +90,39 @@
             <button class="btn-primary" id="downloadBtn">Download ASCII</button>
         </section>
 
+        <!-- Video Controls -->
+        <section class="controls" id="videoControls" style="display: none;">
+            <div class="control-group">
+                <label class="control-label">Video Length (seconds)</label>
+                <div class="control-slider">
+                    <input type="range" id="videoLengthSlider" min="1" max="30" value="5">
+                    <span id="videoLengthValue">5 sec</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Resolution</label>
+                <select id="videoResolution" class="control-select">
+                    <option value="80">Low (80 chars)</option>
+                    <option value="120" selected>Medium (120 chars)</option>
+                    <option value="160">High (160 chars)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Color</label>
+                <input type="checkbox" id="videoColor" class="control-checkbox" checked>
+            </div>
+
+            <button class="btn-primary" id="convertVideoBtn">Convert to ASCII Video</button>
+            <div id="videoProgress" style="margin-top:15px;display:none;">
+                <div style="background:#1a1a2e;border-radius:4px;overflow:hidden;">
+                    <div id="progressBar" style="background:#00ff00;height:20px;width:0%;transition:width 0.3s;"></div>
+                </div>
+                <p id="progressText" style="margin-top:8px;font-size:0.9em;">Processing...</p>
+            </div>
+        </section>
+
         <!-- Output -->
         <section class="output" id="output" style="display: none;">
             <div class="output-tabs">
@@ -108,25 +146,25 @@
                 <div class="step">
                     <div class="step-number">1</div>
                     <h3>Upload</h3>
-                    <p>Drag any image or click to browse. We support all common formats.</p>
+                    <p>Drag any file or click to browse. Images, PDFs, videos, documents — we handle it all.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
                     <h3>Convert</h3>
-                    <p>We analyze brightness and map each pixel to an ASCII character.</p>
+                    <p>For images: client-side pixel analysis. For documents: text extraction + ASCII rendering. For video: frame-by-frame ASCII conversion.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
                     <h3>Download</h3>
-                    <p>Export as plain text, colored HTML, or PNG image.</p>
+                    <p>Export as TXT, HTML, PNG (images), or MP4 (videos).</p>
                 </div>
             </div>
         </section>
 
         <!-- Footer -->
         <footer class="footer">
-            <p>Built with ❤️ for the ASCII community</p>
-            <p class="footer-note">Your images never leave your browser. All processing is client-side.</p>
+            <p>Built with ❤️ by <a href="https://github.com/trickysyntax" target="_blank">trickysyntax</a></p>
+            <p class="footer-note">Images processed in your browser. Documents and videos processed securely on server.</p>
         </footer>
     </div>
 

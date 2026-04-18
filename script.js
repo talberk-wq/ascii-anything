@@ -1,4 +1,4 @@
-// ===== ASCII ANYTHING - Image to ASCII Converter =====
+// ===== ASCII ANYTHING - Universal File Converter =====
 
 // Character palettes
 const PALETTES = {
@@ -12,17 +12,22 @@ const PALETTES = {
 
 // State
 let currentImage = null;
+let currentFile = null;
+let fileType = null;
 let colorMode = 'grayscale';
 let resolution = 80;
 let palette = 'standard';
 let inverted = false;
+let colorData = [];
 
 // DOM Elements
 const uploadZone = document.getElementById('uploadZone');
 const fileInput = document.getElementById('fileInput');
 const uploadPreview = document.getElementById('uploadPreview');
+const videoPreview = document.getElementById('videoPreview');
 const uploadContent = uploadZone.querySelector('.upload-content');
-const controls = document.getElementById('controls');
+const imageControls = document.getElementById('imageControls');
+const videoControls = document.getElementById('videoControls');
 const output = document.getElementById('output');
 const asciiPreview = document.getElementById('asciiPreview');
 const asciiText = document.getElementById('asciiText');
@@ -31,23 +36,26 @@ const resolutionSlider = document.getElementById('resolutionSlider');
 const resolutionValue = document.getElementById('resolutionValue');
 const invertCheck = document.getElementById('invertCheck');
 const downloadBtn = document.getElementById('downloadBtn');
+const convertVideoBtn = document.getElementById('convertVideoBtn');
 const tabBtns = document.querySelectorAll('.tab-btn');
 const previewTab = document.getElementById('previewTab');
 const textTab = document.getElementById('textTab');
 
+// File type detection
+const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
+const VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'image/gif'];
+const DOCUMENT_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'text/plain'];
+
 // ===== EVENT LISTENERS =====
 
-// Upload zone click
 uploadZone.addEventListener('click', () => fileInput.click());
 
-// File input change
 fileInput.addEventListener('change', (e) => {
     if (e.target.files.length > 0) {
         handleFile(e.target.files[0]);
     }
 });
 
-// Drag and drop
 uploadZone.addEventListener('dragover', (e) => {
     e.preventDefault();
     uploadZone.classList.add('dragover');
@@ -65,7 +73,7 @@ uploadZone.addEventListener('drop', (e) => {
     }
 });
 
-// Controls
+// Image controls
 paletteSelect.addEventListener('change', (e) => {
     palette = e.target.value;
     if (currentImage) convertToASCII();
@@ -77,20 +85,28 @@ resolutionSlider.addEventListener('input', (e) => {
     if (currentImage) convertToASCII();
 });
 
-invertCheck.addEventListener('change', (e) => {
-    inverted = e.target.checked;
-    if (currentImage) convertToASCII();
-});
-
-// Color mode toggle
-document.querySelectorAll('.toggle-btn').forEach(btn => {
+document.querySelectorAll('.control-toggle .toggle-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+        e.target.parentElement.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         colorMode = e.target.dataset.mode;
         if (currentImage) convertToASCII();
     });
 });
+
+invertCheck.addEventListener('change', (e) => {
+    inverted = e.target.checked;
+    if (currentImage) convertToASCII();
+});
+
+// Video controls
+const videoLengthSlider = document.getElementById('videoLengthSlider');
+const videoLengthValue = document.getElementById('videoLengthValue');
+videoLengthSlider.addEventListener('input', (e) => {
+    videoLengthValue.textContent = `${e.target.value} sec`;
+});
+
+convertVideoBtn.addEventListener('click', convertVideo);
 
 // Tab switching
 tabBtns.forEach(btn => {
@@ -104,33 +120,45 @@ tabBtns.forEach(btn => {
     });
 });
 
-// Download
 downloadBtn.addEventListener('click', downloadASCII);
 
 // ===== CORE FUNCTIONS =====
 
 function handleFile(file) {
-    if (!file.type.startsWith('image/')) {
-        alert('Please upload an image file');
-        return;
+    currentFile = file;
+    
+    // Detect file type
+    if (IMAGE_TYPES.includes(file.type) || file.name.toLowerCase().endsWith('.svg')) {
+        fileType = 'image';
+        handleImage(file);
+    } else if (VIDEO_TYPES.includes(file.type)) {
+        fileType = 'video';
+        handleVideo(file);
+    } else if (DOCUMENT_TYPES.includes(file.type) || 
+               /\.(txt|pdf|docx|pptx)$/i.test(file.name)) {
+        fileType = 'document';
+        handleDocument(file);
+    } else {
+        alert('Unsupported file type. Please upload an image, video, or document.');
     }
+}
 
+function handleImage(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
         const img = new Image();
         img.onload = () => {
             currentImage = img;
             
-            // Show preview
             uploadPreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-            uploadPreview.classList.add('active');
+            uploadPreview.style.display = 'block';
+            videoPreview.style.display = 'none';
             uploadContent.style.display = 'none';
             
-            // Show controls and output
-            controls.style.display = 'grid';
-            output.style.display = 'block';
+            imageControls.style.display = 'grid';
+            videoControls.style.display = 'none';
+            output.style.display = 'none';
             
-            // Convert
             convertToASCII();
         };
         img.src = e.target.result;
@@ -138,8 +166,39 @@ function handleFile(file) {
     reader.readAsDataURL(file);
 }
 
-// Store color data for PNG export
-let colorData = [];
+function handleVideo(file) {
+    const url = URL.createObjectURL(file);
+    videoPreview.innerHTML = `<video id="videoElement" controls style="max-width:100%;max-height:300px;"><source src="${url}" type="${file.type}"></video>`;
+    videoPreview.style.display = 'block';
+    uploadPreview.style.display = 'none';
+    uploadContent.style.display = 'none';
+    
+    imageControls.style.display = 'none';
+    videoControls.style.display = 'grid';
+    output.style.display = 'none';
+}
+
+function handleDocument(file) {
+    uploadPreview.innerHTML = `<div style="padding:20px;text-align:center;">📄 ${file.name}</div>`;
+    uploadPreview.style.display = 'block';
+    videoPreview.style.display = 'none';
+    uploadContent.style.display = 'none';
+    
+    imageControls.style.display = 'none';
+    videoControls.style.display = 'none';
+    
+    extractDocumentText(file);
+}
+
+function showOutput() {
+    output.style.display = 'block';
+    // Switch to preview tab
+    tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === 'preview'));
+    previewTab.classList.add('active');
+    textTab.classList.remove('active');
+}
+
+// ===== IMAGE CONVERSION =====
 
 function convertToASCII() {
     if (!currentImage) return;
@@ -147,26 +206,22 @@ function convertToASCII() {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
 
-    // Calculate dimensions (maintain aspect ratio, account for character aspect ratio)
-    const charAspectRatio = 0.5; // Characters are roughly twice as tall as wide
+    const charAspectRatio = 0.5;
     const targetWidth = resolution;
     const targetHeight = Math.floor(resolution * (currentImage.height / currentImage.width) * charAspectRatio);
 
     canvas.width = targetWidth;
     canvas.height = targetHeight;
 
-    // Draw resized image
     ctx.drawImage(currentImage, 0, 0, targetWidth, targetHeight);
 
-    // Get pixel data
     const imageData = ctx.getImageData(0, 0, targetWidth, targetHeight);
     const pixels = imageData.data;
 
-    // Convert to ASCII
     const paletteChars = PALETTES[palette];
     let ascii = '';
     let asciiHtml = '';
-    colorData = []; // Reset color data
+    colorData = [];
 
     for (let y = 0; y < targetHeight; y++) {
         const lineColors = [];
@@ -176,18 +231,15 @@ function convertToASCII() {
             const g = pixels[idx + 1];
             const b = pixels[idx + 2];
 
-            // Calculate brightness
             let brightness = 0.299 * r + 0.587 * g + 0.114 * b;
             
             if (inverted) {
                 brightness = 255 - brightness;
             }
 
-            // Map brightness to character index
             const charIdx = Math.floor((brightness / 255) * (paletteChars.length - 1));
             const char = paletteChars[charIdx];
 
-            // Always build ascii string (for text file and PNG dimensions)
             ascii += char;
             
             if (colorMode === 'color') {
@@ -202,7 +254,6 @@ function convertToASCII() {
         colorData.push(lineColors);
     }
 
-    // Update output
     asciiText.value = ascii;
     
     if (colorMode === 'color') {
@@ -210,10 +261,107 @@ function convertToASCII() {
     } else {
         asciiPreview.textContent = ascii;
     }
+    
+    showOutput();
 }
 
+// ===== DOCUMENT PROCESSING =====
+
+async function extractDocumentText(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+        const response = await fetch('/api/document', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.error) {
+            alert('Error: ' + result.error);
+            return;
+        }
+        
+        // Display banner + text
+        asciiPreview.innerHTML = `<pre style="font-size:0.7em;">${result.banner}</pre>`;
+        asciiText.value = result.text;
+        
+        showOutput();
+        
+    } catch (error) {
+        alert('Error processing document: ' + error.message);
+    }
+}
+
+// ===== VIDEO PROCESSING =====
+
+async function convertVideo() {
+    if (!currentFile) return;
+    
+    const length = parseInt(document.getElementById('videoLengthSlider').value);
+    const resolution = parseInt(document.getElementById('videoResolution').value);
+    const color = document.getElementById('videoColor').checked;
+    
+    // Show progress
+    document.getElementById('videoProgress').style.display = 'block';
+    document.getElementById('progressBar').style.width = '10%';
+    document.getElementById('progressText').textContent = 'Uploading...';
+    
+    const formData = new FormData();
+    formData.append('file', currentFile);
+    formData.append('length', length);
+    formData.append('resolution', resolution);
+    formData.append('color', color);
+    
+    try {
+        document.getElementById('progressBar').style.width = '30%';
+        document.getElementById('progressText').textContent = 'Converting to ASCII...';
+        
+        const response = await fetch('/api/video', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        document.getElementById('progressBar').style.width = '100%';
+        
+        if (result.error) {
+            document.getElementById('progressText').textContent = 'Error: ' + result.error;
+            return;
+        }
+        
+        document.getElementById('progressText').textContent = 'Complete! Downloading...';
+        
+        // Auto-download
+        const a = document.createElement('a');
+        a.href = result.download_url;
+        a.download = `ascii_${currentFile.name.split('.')[0]}.mp4`;
+        a.click();
+        
+        // Show in preview
+        asciiPreview.innerHTML = `
+            <div style="text-align:center;padding:40px;">
+                <h3>✅ ASCII Video Created!</h3>
+                <p>Downloaded: ascii_${currentFile.name.split('.')[0]}.mp4</p>
+                <p style="margin-top:20px;">${result.message || ''}</p>
+            </div>
+        `;
+        asciiText.value = `ASCII Video Conversion Complete\n\nInput: ${currentFile.name}\nLength: ${length}s\nResolution: ${resolution} chars\nColor: ${color ? 'Yes' : 'No'}\n\nDownloaded to your computer.`;
+        
+        showOutput();
+        
+    } catch (error) {
+        document.getElementById('progressText').textContent = 'Error: ' + error.message;
+    }
+}
+
+// ===== DOWNLOAD =====
+
 function downloadASCII() {
-    if (!currentImage) return;
+    if (!currentImage && !asciiText.value) return;
 
     const format = prompt('Download format:\n1. Text file (.txt)\n2. Colored HTML (.html)\n3. PNG image\n\nEnter 1, 2, or 3:', '1');
 
@@ -268,11 +416,9 @@ function downloadHTML() {
 }
 
 function downloadPNG() {
-    // Create a canvas to render the ASCII
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    // Measure text
     ctx.font = '8px "JetBrains Mono", monospace';
     const charWidth = ctx.measureText('M').width;
     const charHeight = 10;
@@ -284,16 +430,13 @@ function downloadPNG() {
     canvas.width = maxWidth;
     canvas.height = height;
     
-    // Fill background
     ctx.fillStyle = '#0a0a0f';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw text
     ctx.font = '8px "JetBrains Mono", monospace';
     ctx.textBaseline = 'top';
     
     if (colorMode === 'color' && colorData.length > 0) {
-        // Render with colors
         colorData.forEach((line, y) => {
             let xOffset = 0;
             line.forEach(pixel => {
@@ -303,14 +446,12 @@ function downloadPNG() {
             });
         });
     } else {
-        // Grayscale mode
         ctx.fillStyle = '#ffffff';
         lines.forEach((line, y) => {
             ctx.fillText(line, 0, y * charHeight);
         });
     }
     
-    // Download
     canvas.toBlob((blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
