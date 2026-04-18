@@ -31,7 +31,7 @@
 - **🎯 Smart Detection** — Auto-extracts and displays on upload
 
 ### ✏️ Text Banner Generator
-- **🔤 9 Font Styles** — Slant, Doom, Big, Banner3, Small, Cyberlarge, 3-D, Gothic, Standard
+- **🔤 25 Font Styles** — Slant, Doom, Big, Banner3, Small, Cyberlarge, 3-D, Gothic, Standard, Alligator, Alpha, Blocks, Bubble, Digital, Epic, Graffiti, LCD, Peaks, Poison, Rectangles, Shadow, Star Wars, Stop, Wavy, and more
 - **📋 Copy to Clipboard** — One-click copy for code comments, READMEs
 - **💾 Download as TXT** — Save banners for later use
 - **⚡ Instant Preview** — See results in real-time
@@ -59,7 +59,7 @@
 
 ### Text Banners
 1. Type any text (up to 50 chars)
-2. Choose from 9 font styles
+2. Choose from 25 font styles
 3. Copy or download instantly
 
 ---

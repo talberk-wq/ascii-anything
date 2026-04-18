@@ -73,6 +73,18 @@ body {
     color: var(--text-primary);
 }
 
+.nav-pill {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
 /* ===== HERO ===== */
 .hero {
     text-align: center;
