@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCII Anything — Turn Any Image Into ASCII Art</title>
+    <meta name="description" content="Free online ASCII art converter. Transform any image into beautiful text-based art instantly. No upload required — everything happens in your browser.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">⬡</span>
+                <span class="logo-text">ASCII Anything</span>
+            </div>
+            <nav class="nav">
+                <a href="#how-it-works" class="nav-link">How It Works</a>
+                <a href="https://github.com/talberk-wq" class="nav-link" target="_blank">GitHub</a>
+            </nav>
+        </header>
+
+        <!-- Hero -->
+        <section class="hero">
+            <h1 class="hero-title">
+                Turn Any Image Into<br>
+                <span class="gradient-text">ASCII Art</span>
+            </h1>
+            <p class="hero-subtitle">
+                Free, instant, private. Drag an image below and watch it transform into beautiful text-based art. No upload required — everything happens in your browser.
+            </p>
+            
+            <!-- Upload Zone -->
+            <div class="upload-zone" id="uploadZone">
+                <input type="file" id="fileInput" accept="image/*" hidden>
+                <div class="upload-content">
+                    <div class="upload-icon">📁</div>
+                    <h3>Drop your image here</h3>
+                    <p>or click to browse</p>
+                    <p class="upload-hint">Supports: JPG, PNG, GIF, WebP, BMP</p>
+                </div>
+                <div class="upload-preview" id="uploadPreview"></div>
+            </div>
+        </section>
+
+        <!-- Controls -->
+        <section class="controls" id="controls" style="display: none;">
+            <div class="control-group">
+                <label class="control-label">Character Palette</label>
+                <select id="paletteSelect" class="control-select">
+                    <option value="standard">Standard ( .:-=+*#%@)</option>
+                    <option value="blocks">Blocks ( ░▒▓█)</option>
+                    <option value="circles">Circles ( ○◉●◎)</option>
+                    <option value="matrix">Matrix ( ﾊﾐﾋｰｳｼﾅ...)</option>
+                    <option value="simple">Simple ( .XO@)</option>
+                    <option value="detailed">Detailed (16 chars)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Resolution</label>
+                <div class="control-slider">
+                    <input type="range" id="resolutionSlider" min="20" max="200" value="80">
+                    <span id="resolutionValue">80 chars</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Color Mode</label>
+                <div class="control-toggle">
+                    <button class="toggle-btn active" data-mode="grayscale">Grayscale</button>
+                    <button class="toggle-btn" data-mode="color">Color</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="control-label">Invert</label>
+                <input type="checkbox" id="invertCheck" class="control-checkbox">
+            </div>
+
+            <button class="btn-primary" id="downloadBtn">Download ASCII</button>
+        </section>
+
+        <!-- Output -->
+        <section class="output" id="output" style="display: none;">
+            <div class="output-tabs">
+                <button class="tab-btn active" data-tab="preview">Preview</button>
+                <button class="tab-btn" data-tab="text">Text</button>
+            </div>
+
+            <div class="tab-content active" id="previewTab">
+                <div class="ascii-preview" id="asciiPreview"></div>
+            </div>
+
+            <div class="tab-content" id="textTab">
+                <textarea id="asciiText" readonly></textarea>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="how-it-works" id="how-it-works">
+            <h2 class="section-title">How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Upload</h3>
+                    <p>Drag any image or click to browse. We support all common formats.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Convert</h3>
+                    <p>We analyze brightness and map each pixel to an ASCII character.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Download</h3>
+                    <p>Export as plain text, colored HTML, or PNG image.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Built with ❤️ for the ASCII community</p>
+            <p class="footer-note">Your images never leave your browser. All processing is client-side.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
